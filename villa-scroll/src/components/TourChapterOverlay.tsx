@@ -1,18 +1,24 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { TOUR_CHAPTERS } from "@/data/hotelData";
-import { BedIcon } from "./Icons";
+import { TOUR_CHAPTERS, TourChapter } from "@/data/hotelData";
+import { BedIcon, PauseIcon, PlayIcon } from "./Icons";
 
 interface TourChapterOverlayProps {
   currentFrame: number;
   totalFrames?: number;
   onReserveSuite: (suiteId?: string) => void;
+  onSelectChapter?: (chapter: TourChapter) => void;
+  isAutoTour?: boolean;
+  onToggleAutoTour?: () => void;
 }
 
 export default function TourChapterOverlay({
   currentFrame,
   onReserveSuite,
+  onSelectChapter,
+  isAutoTour = false,
+  onToggleAutoTour,
 }: TourChapterOverlayProps) {
   // Determine which chapter is active based on current frame
   const activeChapter = useMemo(() => {
@@ -65,8 +71,43 @@ export default function TourChapterOverlay({
             <BedIcon size={14} />
             <span>Book This Space</span>
           </button>
+          {onToggleAutoTour && (
+            <button
+              onClick={onToggleAutoTour}
+              aria-pressed={isAutoTour}
+              className="px-4 py-2 rounded-full bg-black/65 backdrop-blur-md border border-white/30 hover:border-amber-300 text-white text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg"
+            >
+              {isAutoTour ? <PauseIcon size={14} /> : <PlayIcon size={14} />}
+              <span>{isAutoTour ? "Pause Tour" : "Auto Tour"}</span>
+            </button>
+          )}
         </div>
       </div>
+      {onSelectChapter && (
+        <nav
+          aria-label="Tour chapters"
+          className="pointer-events-auto mt-4 flex flex-wrap gap-2"
+        >
+          {TOUR_CHAPTERS.map((chapter) => {
+            const isActive = chapter.id === activeChapter.id;
+            return (
+              <button
+                key={chapter.id}
+                type="button"
+                onClick={() => onSelectChapter(chapter)}
+                aria-current={isActive ? "step" : undefined}
+                className={`rounded-full border px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${
+                  isActive
+                    ? "border-amber-300 bg-amber-400/20 text-amber-200"
+                    : "border-white/30 bg-black/50 text-zinc-200 hover:border-amber-300 hover:text-white"
+                }`}
+              >
+                {chapter.number} {chapter.title}
+              </button>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }
